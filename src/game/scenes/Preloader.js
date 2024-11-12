@@ -47,6 +47,9 @@ export class Preloader extends Scene
         this.load.image('tiles2', 'tiles/hyptosis_til-art-batch-2.png');
         this.load.tilemapTiledJSON('map', 'maps/OutsideHouse.tmj');
 
+        // loading animations
+        this.load.spritesheet('mc-run-sprites', 'tiles/Run-Sheet.png', { frameWidth: 80, frameHeight: 80 });
+        this.load.spritesheet('mc-idle-sprites', 'tiles/Idle-Sheet.png', { frameWidth: 64, frameHeight: 80 });
     }
 
     create ()
@@ -55,9 +58,42 @@ export class Preloader extends Scene
         //  For example, you can define global animations here, so we can use them in other scenes.
         //this.pc = new PC(this, 400, 300, 'logo', 'Liam', 10, 100, 20, 20, 20, 20, 20, 20, 20)
         //    .setDisplaySize(32, 32);
+        this.anims.create({
+            key: "mc-left-run-anim",
+            frames: this.anims.generateFrameNumbers("mc-run-sprites", { frames: [0, 1, 2, 3, 4, 5, 6, 7] }),
+            frameRate: 10,
+            repeat: -1
+        })
 
+        this.anims.create({
+            key: "mc-right-run-anim",
+            frames: this.anims.generateFrameNumbers("mc-run-sprites", { frames: [0, 1, 2, 3, 4, 5, 6, 7] }),
+            frameRate: 10,
+            repeat: -1
+        })
 
+        this.anims.create({
+            key: "mc-up-run-anim",
+            frames: this.anims.generateFrameNumbers("mc-run-sprites", { frames: [0, 1, 2, 3, 4, 5, 6, 7] }),
+            frameRate: 10,
+            repeat: -1
+        })
+
+        this.anims.create({
+            key: "mc-down-run-anim",
+            frames: this.anims.generateFrameNumbers("mc-run-sprites", { frames: [0, 1, 2, 3, 4, 5, 6, 7] }),
+            frameRate: 10,
+            repeat: -1
+        })
+
+        this.anims.create({
+            key: "mc-idle-anim",
+            frames: this.anims.generateFrameNumbers("mc-idle-sprites", { frames: [0, 1, 2, 3, 0, 0, 0, 0, 0] }),
+            frameRate: 10,
+            repeat: -1
+        })
         //  Move to the MainMenu. You could also swap this for a Scene Transition, such as a camera fade.
         this.scene.start('MainMenu');
+
     }
 }

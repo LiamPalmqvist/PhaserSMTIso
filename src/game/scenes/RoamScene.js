@@ -5,6 +5,12 @@ import { PC } from '../objects/Entity';
 
 export class RoamScene extends Scene {
     
+    player;
+    KeyObjects;
+    sprinting;
+    speed = 2.5;
+    prevVelocity;
+
     constructor() {
         super('RoamScene');
     }
@@ -27,14 +33,16 @@ export class RoamScene extends Scene {
 
         //this.load.atlas("attack", "sprites/sheets/03.png", "sprites/sheets/03.json");
 
-        this.keyObjects = this.input.keyboard.addKeys({
+        this.KeyObjects = this.input.keyboard.addKeys({
             up: 'W',
             down: 'S',
             left: 'A',
             right: 'D',
+            //rotateRight: 'E',
+            //rotateLeft: 'Q',
             sprint: 'SHIFT',
-            changeScene: 'SPACE'
-        });  // keyObjects.up, keyObjects.down, keyObjects.left, keyObjects.right
+            //changeScene: 'SPACE'
+        });  // this.KeyObjects.up, this.KeyObjects.down, this.KeyObjects.left, this.KeyObjects.right
 
     }
 
@@ -42,105 +50,43 @@ export class RoamScene extends Scene {
     // And initiates all the game objects
     async create() {
         
+        // Create the map
         const map = this.make.tilemap({ key: 'map' });
         const tileset = map.addTilesetImage('hyptosis_tile-art-batch-1', 'tiles1');
         const tileset2 = map.addTilesetImage('hyptosis_til-art-batch-2', 'tiles2');
 
-        //const outside_tilemap = this.make.tilemap({ key: "outside", tileWidth: 32, tileHeight: 64 });
-        //const outside_tiles = outside_tilemap.addTilesetImage('iso-64x64-outside', 'tiles');
- 
-        
+        // Create the layers
         const floor = map.createLayer('Floor', [tileset, tileset2], 0, 0);
+        const floorDecal = map.createLayer('FloorDecal', [tileset, tileset2], 0, 0);
         const collides = map.createLayer('Collides', [tileset, tileset2], 0, 0);
         
-        // adds a background image
-        // the "add" object is used to add game objects
-        // this.add.image(400, 300, 'sky');
+        // Locate the spawnpoint
+        const spawnpoint = map.findObject("Interactables", obj => obj.name === "Spawnpoint");
+
+        // Create the player
+        this.player = this.matter.add
+        .sprite(spawnpoint.x, spawnpoint.y, 'red')
+        .setSize(32, 32)
+        .setFixedRotation();
         
-        // add the PC in before the aboveLayer so that the aboveLayer is rendered after the PC
-        //this.pc = new PC(this, this.game.config.width/2, this.game.config.height/2, "logo", "Liam", 10, 100, 20, 20, 20, 20, 20, 20, 20)
-        //.setDisplaySize(32, 32);
-        //this.matter.add.gameObject(this.pc);
-        //this.pc.setCollidesWith = playerLayer;
-        //this.pc.setCollideWorldBounds(true);
-        //this.pc.setCollisionByProperty({ Collides: true });
-        
-        
-        const decal = map.createLayer('Decal', [tileset, tileset2], 0, 0);
+        // Create the layers after the player
         const collidesDecal = map.createLayer('CollidesDecal', [tileset, tileset2], 0, 0);
+        const decal = map.createLayer('Decal', [tileset, tileset2], 0, 0);
+        const collisions = map.createLayer('Collision', [tileset, tileset2], 0, 0);
+        collisions.setCollisionByProperty({Collides: true});
+        this.matter.world.convertTilemapLayer(collisions);
+        collisions.setVisible(false);
         
-        collides.setCollisionFromCollisionGroup({Collides: true});
-        //this.matter.world.convertTilemapLayer(playerLayer);
-        //playerLayer.setCollisionByProperty({ Collides: true });
-
-        // const debugGraphics = this.add.graphics().setAlpha(0.75);
-        // this.physics.world.createDebugGraphic();
-        // this.physics.add.image(0, 0, 'tiles');
-        // collides.renderDebug(debugGraphics, {
-        // tileColor: null, // Color of non-colliding tiles
-        // collidingTileColor: new Phaser.Display.Color(243, 134, 48, 255), // Color of colliding tiles
-        // faceColor: new Phaser.Display.Color(40, 39, 37, 255) // Color of colliding face edges
-        // });
-
-
-        //this.pc.renderDebug();
-
-        //this.physics.add.collider(this.pc, playerLayer);
+        // set up animations
+        const anims = this.anims;
         
-        
-        //this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
-        //this.cameras.main.startFollow(this.pc);
+        // Assign the camera to a variable to make it easier to work with
+        const camera = this.cameras.main;
+        // Set the bounds of the camera to be the size of the map
+        camera.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+        camera.startFollow(this.player);
 
-        
-        //this.cameras.main.setBackgroundColor(0xFF0000);
-
-        
-        // this.anims.create({
-        //     key: "idle",
-        //     frames: this.anims.generateFrameNames("attack", {
-        //         prefix: "idle/frame",
-        //         start: 0,
-        //         end: 12
-        //     }),
-        //     framerate: 60,
-        //     repeat: -1
-        // })
-
-        // this.add.text(0, 0, "Press SPACE to change scene", {font: "16px Courier", fill: "#00ff00"});
-
-        //this.physics.add.existing(pc);
-        //pc.setVelocity(100, 300)
-        //pc.setBounce(1,1);
-        //pc.setCollideWorldBounds(true);
-
-        // entities.push(new Entity(this, game.config.width/2, game.config.height/2, "red", "Mail", 10, 100, 20, 20, 20, 20, 20, 20, 20))
-        // // adds particles to the game
-        // // properties are stored in the initialiser
-        // const particles = this.add.particles(0, 0, 'logo', {
-        //     speed: 100,
-        //     scale: {start: 0.1, end: 0},
-        //     rotate: {start: 0, end: 360},
-        //     blendMode: 'ADD'
-        // })
-
-
-        // adds physics to the loaded logo
-        //const logo = this.physics.add.image(400, 100, 'red')
-        //    .setSize(32, 32)
-        //    .setDisplaySize(32, 32);
-
-        // logo physics properties
-        //logo.setVelocity(100, 300);
-        //logo.setBounce(1, 1);
-        //logo.setCollideWorldBounds(true);
-
-        // makes the particles follow the logo
-        // particles.startFollow(pc);
-        
-
-        this.cameras.main.setBackgroundColor(0x00ffFF);
-
-        EventBus.emit('current-scene-ready', this);
+        EventBus.emit('current-scene-ready', this);        
     }
 
     changeScene() {
@@ -148,48 +94,49 @@ export class RoamScene extends Scene {
     }
 
     update() {
-        
         /* input */
-        
-        // if (this.keyObjects.up.isDown) {
-        //    this.pc.y -= this.sprinting/* * collidingUp*/;
-        // }
-
-        // if (this.keyObjects.down.isDown) {
-        //     this.pc.y += this.sprinting/* * collidingDown*/;
-        // }
-
-        // if (this.keyObjects.left.isDown) {
-        //     this.pc.x -= this.sprinting/* * collidingLeft*/;
-        // }
-
-        // if (this.keyObjects.right.isDown) {
-        //     this.pc.x += this.sprinting/* collidingRight*/;
-        // }
+        // Get angular velocity of the player
+        this.prevVelocity = this.player.getAngularVelocity();
         
         
-        // if (this.keyObjects.sprint.isDown) {
-        //     this.sprinting = 2;
-        // }
+        this.player.setVelocity(0);
 
-        // if (this.keyObjects.sprint.isUp) {
-        //     this.sprinting = 1;
-        // }
-
-    
-        // if (this.keyObjects.changeScene.isDown) {
-        //     this.scene.pause();
-        //     //this.scene.launch("BattleScene");
-        //     this.scene.switch("BattleScene");
-        // }
-        /* end input */
-
-        /*
-        pc.updatePosition();
-        for (let i in entities) {
-            i.updatePosition();
+        // Horizontal movement
+        if (this.KeyObjects.left.isDown) {
+            this.player.setVelocityX(-this.speed);
+        } else if (this.KeyObjects.right.isDown) {
+            this.player.setVelocityX(this.speed);
         }
-        */
+
+        // Vertical movement
+        if (this.KeyObjects.up.isDown) {
+            this.player.setVelocityY(-this.speed);
+        } else if (this.KeyObjects.down.isDown) {
+            this.player.setVelocityY(this.speed);
+        }
+
+        
+        if (this.KeyObjects.sprint.isDown) {
+            this.speed = 5;
+        }
+
+        if (this.KeyObjects.sprint.isUp) {
+            this.speed = 2.5;
+        }
+
+        if (this.KeyObjects.up.isDown) {
+            this.player.anims.play('mc-up-run-anim', true);
+        } else if (this.KeyObjects.down.isDown) {
+            this.player.anims.play('mc-down-run-anim', true);
+        } else if (this.KeyObjects.right.isDown) {
+            this.player.flipX = false;
+            this.player.anims.play('mc-right-run-anim', true);
+        } else if (this.KeyObjects.left.isDown) {
+            this.player.flipX = true;
+            this.player.anims.play('mc-left-run-anim', true);
+        } else {
+            this.player.anims.play('mc-idle-anim', true);
+        }
 
     }
 }
